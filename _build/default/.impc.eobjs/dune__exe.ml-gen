@@ -24,8 +24,14 @@ module Implexer = Dune__exe__Implexer
 (** @canonical Dune__exe.Impparser *)
 module Impparser = Dune__exe__Impparser
 
+(** @canonical Dune__exe.Label *)
+module Label = Dune__exe__Label
+
 (** @canonical Dune__exe.Mips *)
 module Mips = Dune__exe__Mips
 
 (** @canonical Dune__exe.Rtl *)
 module Rtl = Dune__exe__Rtl
+
+(** @canonical Dune__exe.Utils *)
+module Utils = Dune__exe__Utils

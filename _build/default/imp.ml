@@ -45,7 +45,9 @@ type instruction =
 (* Instruction sequence *)
 and sequence = instruction list
 
-
+type branchement = 
+  | Bqez
+  | Bnez
 
 
 (* Vérification que e est sans effet de bord *)
@@ -134,4 +136,13 @@ type program = {
 
 
 
+(** Print a binary operator *)
+let print_binop fmt op =
+  match op with
+  | Add -> Format.fprintf fmt "+"
+  | Mul -> Format.fprintf fmt "*"
+  | Lt  -> Format.fprintf fmt "<"
 
+
+
+(** Print an expression *)

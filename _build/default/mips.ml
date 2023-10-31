@@ -146,3 +146,6 @@ let print_program fmt p =
   pr_asm fmt p.text;
   fprintf fmt ".data\n";
   pr_asm fmt p.data
+
+let print_register fmt r =
+  fprintf fmt "%s" r
