@@ -1,0 +1,168 @@
+globals: 
+
+function fact(#6)
+{2: mov $1 #1  --> L1
+20: mov #17 $s2  --> L19
+2: mov $1 #1  --> L1
+2: mov $s1 #16  --> L1
+43: delete_frame --> L42
+29: mov $s2 #25  --> L28
+51: mov #30 $s7  --> L50
+35: alloc_frame --> L34
+7: mov #6 #4  --> L6
+7: mov #6 #4  --> L6
+7: mov $s6 #21  --> L6
+39: mov $v0 #3  --> L3
+13: goto L38
+13: mov $v0 #3  --> L3
+13: goto L12
+46: mov #25 $s2  --> L45
+9: jle #8 #7  --> L2 L8
+9: jle #8 #7  --> L2 L8
+9: alloc_frame --> L8
+11: mov #6 #7  --> L10
+0: mov #9 $v0  --> L25
+11: mov #6 #7  --> L10
+11: call fact 1  --> L10
+0: mov $a0 #10  --> L11
+42: return
+10: mov $2 #8  --> L9
+26: mov $a0 #14  --> L14
+10: mov $2 #8  --> L9
+10: mov $v0 #11  --> L12
+41: mov #4 $a0  --> L40
+36: mov $v0 #11  --> L12
+37: call fact 1  --> L36
+33: mov $s6 #29  --> L32
+21: mov #18 $s3  --> L20
+24: mov #21 $s6  --> L23
+16: return
+3: binop * #3 #2  --> L1
+3: binop * #3 #2  --> L1
+3: mov $s2 #17  --> L2
+5: binop + #5 #4  --> L4
+5: binop + #5 #4  --> L4
+5: mov $s4 #19  --> L4
+44: mov #23 $s0  --> L43
+47: mov #26 $s3  --> L46
+23: mov #20 $s5  --> L22
+1: mov $0 #0  --> L0
+28: mov $s1 #24  --> L27
+1: mov $0 #0  --> L0
+1: mov $s0 #15  --> L0
+45: mov #24 $s1  --> L44
+22: mov #19 $s4  --> L21
+48: mov #27 $s4  --> L47
+8: mov #6 #2  --> L7
+8: mov #6 #2  --> L7
+8: mov $s7 #22  --> L7
+34: mov $s7 #30  --> L33
+12: mov #13 $v0  --> L51
+12: mov #12 $a0  --> L11
+31: mov $s4 #27  --> L30
+38: mov #12 $a0  --> L37
+27: mov $s0 #23  --> L26
+15: mov #4 $a0  --> L14
+6: mov $-1 #5  --> L5
+6: mov $-1 #5  --> L5
+6: mov $s5 #20  --> L5
+14: mov $1 #12  --> L13
+14: call fact 1  --> L13
+14: mov $1 #12  --> L13
+30: mov $s3 #26  --> L29
+4: goto L41
+4: goto L15
+4: mov $s3 #18  --> L3
+49: mov #28 $s5  --> L48
+40: call fact 1  --> L39
+25: mov #22 $s7  --> L24
+50: mov #29 $s6  --> L49
+17: delete_frame --> L16
+32: mov $s5 #28  --> L31
+19: mov #16 $s1  --> L18
+18: mov #15 $s0  --> L17
+}
+
+function main(#11#6#10)
+{2: mov $1 #1  --> L1
+20: mov #17 $s2  --> L19
+2: mov $1 #1  --> L1
+2: mov $s1 #16  --> L1
+43: delete_frame --> L42
+29: mov $s2 #25  --> L28
+51: mov #30 $s7  --> L50
+35: alloc_frame --> L34
+7: mov #6 #4  --> L6
+7: mov #6 #4  --> L6
+7: mov $s6 #21  --> L6
+39: mov $v0 #3  --> L3
+13: goto L38
+13: mov $v0 #3  --> L3
+13: goto L12
+46: mov #25 $s2  --> L45
+9: jle #8 #7  --> L2 L8
+9: jle #8 #7  --> L2 L8
+9: alloc_frame --> L8
+11: mov #6 #7  --> L10
+0: mov #9 $v0  --> L25
+11: mov #6 #7  --> L10
+11: call fact 1  --> L10
+0: mov $a0 #10  --> L11
+42: return
+10: mov $2 #8  --> L9
+26: mov $a0 #14  --> L14
+10: mov $2 #8  --> L9
+10: mov $v0 #11  --> L12
+41: mov #4 $a0  --> L40
+36: mov $v0 #11  --> L12
+37: call fact 1  --> L36
+33: mov $s6 #29  --> L32
+21: mov #18 $s3  --> L20
+24: mov #21 $s6  --> L23
+16: return
+3: binop * #3 #2  --> L1
+3: binop * #3 #2  --> L1
+3: mov $s2 #17  --> L2
+5: binop + #5 #4  --> L4
+5: binop + #5 #4  --> L4
+5: mov $s4 #19  --> L4
+44: mov #23 $s0  --> L43
+47: mov #26 $s3  --> L46
+23: mov #20 $s5  --> L22
+1: mov $0 #0  --> L0
+28: mov $s1 #24  --> L27
+1: mov $0 #0  --> L0
+1: mov $s0 #15  --> L0
+45: mov #24 $s1  --> L44
+22: mov #19 $s4  --> L21
+48: mov #27 $s4  --> L47
+8: mov #6 #2  --> L7
+8: mov #6 #2  --> L7
+8: mov $s7 #22  --> L7
+34: mov $s7 #30  --> L33
+12: mov #13 $v0  --> L51
+12: mov #12 $a0  --> L11
+31: mov $s4 #27  --> L30
+38: mov #12 $a0  --> L37
+27: mov $s0 #23  --> L26
+15: mov #4 $a0  --> L14
+6: mov $-1 #5  --> L5
+6: mov $-1 #5  --> L5
+6: mov $s5 #20  --> L5
+14: mov $1 #12  --> L13
+14: call fact 1  --> L13
+14: mov $1 #12  --> L13
+30: mov $s3 #26  --> L29
+4: goto L41
+4: goto L15
+4: mov $s3 #18  --> L3
+49: mov #28 $s5  --> L48
+40: call fact 1  --> L39
+25: mov #22 $s7  --> L24
+50: mov #29 $s6  --> L49
+17: delete_frame --> L16
+32: mov $s5 #28  --> L31
+19: mov #16 $s1  --> L18
+18: mov #15 $s0  --> L17
+}
+

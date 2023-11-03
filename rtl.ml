@@ -4,9 +4,7 @@ type label = int
 
 
 (*Pseudo Register*)
-type pseudo_register = 
-  | PReg of Mips.register
-  | PRegInt of int
+type register = Mips.register
   
 
 
@@ -17,25 +15,25 @@ instruction RTL à chaque étiquette. *)
 
 type instruction =
 (* Integer constant: 0, -1, 42, ... *)
-  | RCst   of int * pseudo_register * label
+  | RCst   of int * register * label
   (* Boolean constant: true, false *)
-  | RBool  of bool * pseudo_register * label
+  | RBool  of bool * register * label
   (* Variable, identified by a name *)
-  | RMove of pseudo_register * pseudo_register * label
+  | RMove of register * register * label
   (* Binary operation, with an operator and two operands *)
-  | RBinop of Imp.binop * pseudo_register * pseudo_register * label 
+  | RBinop of Imp.binop * register * register * label 
   (* Function call, with a function name and a list of parameters *)
-  | RCall  of pseudo_register * string * pseudo_register list * label
+  | RCall  of register * string * register list * label
   (* Assignment of a new value to a variable *)
-  | RSet     of  pseudo_register * pseudo_register * label
+  | RSet     of  register * register * label
   (* Conditional *)
-  | RIf      of  pseudo_register * label * label
-  | RPutchar of pseudo_register * label
+  | RIf      of  register * label * label
+  | RPutchar of register * label
   (* Loop *)
-  | RWhile   of pseudo_register * label * label
+  | RWhile   of register * label * label
   | RGoto of label 
-  | Jle  of pseudo_register * pseudo_register * label * label
-  | Jz of pseudo_register * label * label
+  | Jle  of register * register * label * label
+  | Jz of register * label * label
   
   
 
@@ -44,9 +42,9 @@ type cfg = (label, instruction) Hashtbl.t  ;;
 
 type function_def = {
   name : string;
-  params: pseudo_register list;
-  result: pseudo_register;
-  locals: pseudo_register list;
+  params: register list;
+  result: register;
+  locals: register list;
   entry : label;
   exit : label;
   body : cfg;
@@ -60,43 +58,48 @@ type program = {
 
 
 (** Print RTL instructions *)
+let print_register fmt r =
+  Mips.print_register fmt r
 
-let print_pseudo_register fmt r =
-  match r with
-  | PReg r -> Format.fprintf fmt "%a" Mips.print_register r
-  | PRegInt i -> Format.fprintf fmt "%d" i
+let print_register_list fmt l =
+  Format.fprintf fmt "@[%a@]" (Utils.print_list print_register) l
+
+let print_label fmt l =
+  Format.fprintf fmt "L%d" l
 
 let print_instruction fmt i =
   match i with 
-  | RCst (i, r, l) -> Format.fprintf fmt "RCst(%d, %a, %d)" i print_pseudo_register r l
-  | RBool (b, r, l) -> Format.fprintf fmt "RBool(%b, %a, %d)" b print_pseudo_register r l
-  | RMove (r1, r2, l) -> Format.fprintf fmt "RMove(%a, %a, %d)" print_pseudo_register r1 print_pseudo_register r2 l
-  | RBinop (b, r1, r2, l) -> Format.fprintf fmt "RBinop(%a, %a, %a, %d)" Imp.print_binop b print_pseudo_register r1 print_pseudo_register r2 l
-  | RCall (r, s, rl, l) -> Format.fprintf fmt "%a <- call %s(@[%a@])  --> %d" print_pseudo_register r s (Utils.print_list print_pseudo_register) rl l
-  | RSet (r1, r2, l) -> Format.fprintf fmt "RSet(%a, %a, %d)" print_pseudo_register r1 print_pseudo_register r2 l
-  | RIf (r, l1, l2) -> Format.fprintf fmt "RIf(%a, %d, %d)" print_pseudo_register r l1 l2
-  | RPutchar (r, l) -> Format.fprintf fmt "RPutchar(%a, %d)" print_pseudo_register r l
-  | RWhile (r, l1, l2) -> Format.fprintf fmt "RWhile(%a, %d, %d)" print_pseudo_register r l1 l2
-  | RGoto l -> Format.fprintf fmt "RGoto(%d)" l
-  | Jle (r1, r2, l1, l2) -> Format.fprintf fmt "Jle(%a, %a, %d, %d)" print_pseudo_register r1 print_pseudo_register r2 l1 l2
-  | Jz (r, l1, l2) -> Format.fprintf fmt "Jz(%a, %d, %d)" print_pseudo_register r l1 l2
+  | RCst (n,r,l) -> Format.fprintf fmt "mov $%d %a  --> %a" n print_register r  print_label l
+  | RBool (b,r,l) -> Format.fprintf fmt "mov $%b %a  --> %a" b print_register r  print_label l
+  | RMove (r1, r2, l) -> Format.fprintf fmt "mov %a %a  --> %a" print_register r1 print_register r2  print_label l 
+  | RBinop (b, r1, r2, l) -> Format.fprintf fmt "binop %a %a %a  --> %a" Imp.print_binop b print_register r1 print_register r2  print_label l
+  | RCall (r, f, args, l) -> Format.fprintf fmt "%a <- call %s(@[%a@])  --> %a" print_register r f (Utils.print_list print_register) args  print_label l
+  | RSet (r1, r2, l) -> Format.fprintf fmt "mov %a %a  --> %a" print_register r1 print_register r2  print_label l
+  | RIf (r, l1, l2) -> Format.fprintf fmt "RIf(%a, %a, %a)" print_register r print_label l1 print_label l2
+  | RPutchar (r, l) -> Format.fprintf fmt "RPutchar(%a, %a)" print_register r print_label l
+  | RWhile (r, l1, l2) -> Format.fprintf fmt "RWhile(%a, %a, %a)" print_register r print_label l1 print_label l2
+  | RGoto l -> Format.fprintf fmt "goto %d" l
+  | Jle (r1, r2, l1, l2) -> Format.fprintf fmt "jle %a %a %a %a" print_register r1 print_register r2 print_label l1 print_label l2
+  | Jz (r, l1, l2) -> Format.fprintf fmt "jz %a %a %a" print_register r print_label l1 print_label l2
 
 
 let print_cfg fmt cfg =
   let print_instruction fmt (l, i) =
-    Format.fprintf fmt "%d: %a" l print_instruction i
+    Format.fprintf fmt "%a: %a\n" print_label l print_instruction i
   in
-  Format.fprintf fmt "{@[<v 0>%a@]}"
+  Format.fprintf fmt "{\n@[<v 0>%a@]}"
     (Utils.print_list print_instruction) (Hashtbl.to_seq cfg |> List.of_seq)
 
 
 let print_function_def fmt f =
-  Format.fprintf fmt "function %s(@[%a@]) returns %a {@\n%a@\n}"
-    f.name
-    (Utils.print_list print_pseudo_register) f.params
-    print_pseudo_register f.result
-    print_cfg f.body
-
+  Format.fprintf fmt "%a %s(@[%a@])@\n" print_register f.result f.name
+    (Utils.print_list print_register) f.params;
+  Format.fprintf fmt "  @[";
+  Format.fprintf  fmt "entry : %a@\n"  print_label f.entry;
+  Format.fprintf  fmt "exit  : %a@\n" print_label f.exit;
+  Format.fprintf  fmt "locals: @[%a@]@\n" (Utils.print_list print_register) f.locals;
+  print_cfg fmt f.body ;
+  Format.fprintf  fmt "@]@."
 let print_program fmt p =
   Format.fprintf fmt "globals: @[%a@]@\n@\n%a"
     (Utils.print_list Format.pp_print_string) p.globals

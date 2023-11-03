@@ -1,5 +1,9 @@
 globals: 
 
-function main(14) returns 13 {
-{20: RCst(2, 10, 19), 6: RBinop(*, 4, 3, 5), 2: RCst(49, 0, 1), 21: RBinop(+, 11, 2, 20), 14: RCst(6, 7, 13), 24: RCst(2, 12, 23), 16: RCst(4, 8, 15), 8: RBinop(*, 5, 3, 7), 7: RCst(0, 4, 6), 3: RPutchar(1, 0), 13: RBinop(+, 7, 2, 12), 12: RCst(3, 3, 11), 5: Jle(3, 2, 2, 4), 4: RCst(48, 1, 3), 9: RCst(1, 5, 8), 23: RCst(1, 2, 22), 11: RCst(5, 6, 10), 10: RBinop(*, 6, 3, 9), 1: RPutchar(0, 0), 17: RBinop(+, 9, 2, 16), 19: RBinop(+, 10, 2, 18), 18: RCst(3, 9, 17), 22: RCst(2, 11, 21), 15: RBinop(+, 8, 2, 14)}
+#1 main(#2)
+  entry : L1
+  exit  : L0
+  locals: 
+  {
+L1: mov $42 #0  --> L0
 }

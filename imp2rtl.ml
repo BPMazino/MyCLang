@@ -8,23 +8,18 @@ let env = Hashtbl.create 16;;
 let (graph : Rtl.cfg ref) = ref (Hashtbl.create 16);;
 
 
-let generate_reg () = 
-  let cpt = ref (-1) in
-  fun () -> incr cpt; (Printf.printf "r%d" !cpt); (Rtl.PRegInt !cpt);;
 
 
-
+let cpt_label = ref (-1) 
 let new_label () =
-  let i = ref (-1) in
+
   fun () ->
-    incr i;
-    Printf.printf "L%d\n" !i;  
-    !i 
+    incr cpt_label;
+    Printf.printf "L%d\n" !cpt_label;  
+    !cpt_label
 
-let generate_reg = generate_reg ();;
+let generate_reg =  Mips.fresh ;;
 let generate_label = new_label ();;
-
-
 
 
 let add_in_graph (i : Rtl.instruction) = 
@@ -66,9 +61,6 @@ let rec tr_expression e rd ld =
     let l = add_in_graph (RCall (rd,f,r_args,ld)) in
     List.fold_right2 tr_expression args r_args l 
 
-
-
-  
   
 let general_case e lt lf =
   let r = generate_reg () in

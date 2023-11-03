@@ -1,1 +1,1 @@
-imp2rtl.ml: Hashtbl Imp List Printf Rtl
+imp2rtl.ml: Hashtbl Imp List Mips Printf Rtl

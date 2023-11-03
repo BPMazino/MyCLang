@@ -31,6 +31,45 @@ let fp : register = "$fp"
 let gp : register = "$gp"
 let zero : register = "$zero"
 
+
+
+let count = ref (-1)
+let fresh () = incr count;"#" ^string_of_int !count ;;
+let is_pseudo r = r.[0] = '#' ;;
+let is_hard r = r.[0] = '$';;
+module S = Set.Make(String)
+
+type set = S.t
+
+let set_of_list l = List.fold_right S.add l S.empty
+
+let set_of_list l =
+  List.fold_left (fun s r -> S.add r s) S.empty l
+
+(* Function calling conventions *)
+let parameters =
+  [ a0; a1; a2; a3 ]
+
+let result =
+  v0
+
+let caller_saved =
+  v0 :: v1 :: a0 :: a1 :: a2 :: a3 :: t0 :: t1 :: t2 :: t3 :: t4 :: t5 :: t6 :: t7 :: t8 :: t9 :: []
+
+
+let callee_saved =
+  [ s0; s1; s2; s3; s4; s5; s6; s7 ]
+
+let allocatable = set_of_list (caller_saved @ callee_saved)
+
+let k = S.cardinal allocatable
+
+let tmp1, tmp2 =
+  t8, t9
+
+
+
+
 let (~$) r = r
 
 type label = string
@@ -147,5 +186,4 @@ let print_program fmt p =
   fprintf fmt ".data\n";
   pr_asm fmt p.data
 
-let print_register fmt r =
-  fprintf fmt "%s" r
+let print_register = Format.pp_print_string

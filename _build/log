@@ -3,7 +3,7 @@
 # Shared cache: disabled
 # Workspace root: /home/mazino/Downloads/Compiler-mini/Imp2Mips
 # Auto-detected concurrency: 4
-$ /home/mazino/.opam/4.08.1/bin/ocamlc.opt -config > /tmp/dune_00c7b1_output
+$ /home/mazino/.opam/4.08.1/bin/ocamlc.opt -config > /tmp/dune_0a418d_output
 # Dune context:
 #  { name = "default"
 #  ; kind = "default"
@@ -100,8 +100,3 @@ $ /home/mazino/.opam/4.08.1/bin/ocamlc.opt -config > /tmp/dune_00c7b1_output
 #      }
 #  ; instrument_with = []
 #  }
-$ (cd _build/default && /home/mazino/.opam/4.08.1/bin/ocamldep.opt -modules -impl imp2rtl.ml) > _build/default/.impc.eobjs/dune__exe__Imp2rtl.impl.d
-$ (cd _build/default && /home/mazino/.opam/4.08.1/bin/ocamlc.opt -g -bin-annot -I .impc.eobjs/byte -no-alias-deps -opaque -open Dune__exe -o .impc.eobjs/byte/dune__exe__Imp2rtl.cmo -c -impl imp2rtl.ml)
-$ (cd _build/default && /home/mazino/.opam/4.08.1/bin/ocamlopt.opt -g -I .impc.eobjs/byte -I .impc.eobjs/native -intf-suffix .ml -no-alias-deps -opaque -open Dune__exe -o .impc.eobjs/native/dune__exe__Imp2rtl.cmx -c -impl imp2rtl.ml)
-$ (cd _build/default && /home/mazino/.opam/4.08.1/bin/ocamlopt.opt -g -o impc.exe .impc.eobjs/native/dune__exe.cmx .impc.eobjs/native/dune__exe__Imp.cmx .impc.eobjs/native/dune__exe__Mips.cmx .impc.eobjs/native/dune__exe__Imp2mips.cmx .impc.eobjs/native/dune__exe__Utils.cmx .impc.eobjs/native/dune__exe__Rtl.cmx .impc.eobjs/native/dune__exe__Imp2rtl.cmx .impc.eobjs/native/dune__exe__Impparser.cmx .impc.eobjs/native/dune__exe__Implexer.cmx .impc.eobjs/native/dune__exe__Impc.cmx)
-# Promoting "_build/default/impc.exe" to "impc.exe"

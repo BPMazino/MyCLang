@@ -1,0 +1,27 @@
+globals: 
+
+function main()
+{6: mov $s5 #8  --> L5
+2: mov $s1 #4  --> L1
+14: mov #5 $s2  --> L13
+16: mov #7 $s4  --> L15
+8: mov $s7 #10  --> L7
+7: mov $s6 #9  --> L6
+3: mov $s2 #5  --> L2
+13: mov #4 $s1  --> L12
+12: mov #3 $s0  --> L11
+5: mov $s4 #7  --> L4
+4: mov $s3 #6  --> L3
+9: alloc_frame --> L8
+0: mov #1 $v0  --> L19
+11: delete_frame --> L10
+0: mov $a0 #2  --> L1
+10: return
+1: mov $42 #0  --> L0
+1: mov $s0 #3  --> L0
+17: mov #8 $s5  --> L16
+19: mov #10 $s7  --> L18
+18: mov #9 $s6  --> L17
+15: mov #6 $s3  --> L14
+}
+
