@@ -1,0 +1,4 @@
+globals()
+function main() {
+putchar(109);
+}

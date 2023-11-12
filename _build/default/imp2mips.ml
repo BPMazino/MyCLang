@@ -278,11 +278,8 @@ let tr_function fdef =
     (* Binary operation: use the stack to store intermediate values waiting
        to be used. *)
     | Binop(bop, e1, e2) ->
-      let simplified_expr = mkBinop bop e1 e2 in
-      begin  match simplified_expr with
-      | Binop(bop, e1, e2) ->
        let op = match bop with
-         | Add -> add 
+         | Add -> add
          | Mul -> mul
          | Lt  -> slt
        in
@@ -298,9 +295,7 @@ let tr_function fdef =
        @@ pop t1
        (* Apply the binary operation to $t0 (the value of [e1]) and $t1 (the
           value of [e2]), and put the result in $t0. *)
-       @@ op t0 t0 t1      
-      | _ -> tr_expr simplified_expr
-      end
+       @@ op t0 t0 t1  
 
     (* Function call.
        Before jumping to the function itself, evaluate all parameters and put
@@ -339,6 +334,28 @@ let tr_function fdef =
        (* End of the call protocol: remove the arguments from the top of the
           stack. Incrementing $sp is enough (the values are not destroyed, but
           are not reachable anymore). *)
+       @@ addi sp sp (4 * List.length params)
+      | Deref e ->
+       tr_expr e  (* pointer in t0 *)
+       @@ lw t0 0(t0)
+
+      | Alloc e -> (* request e bytes above the heap *)
+       tr_expr e
+       @@ move a0 t0
+       @@ li v0 9
+       @@ syscall   (* sbrk -> shifts the limit of the heap *)
+       @@ move t0 v0  (* v0 contains the first address of the allocated space *)
+      | Addr id ->
+       la t0 id
+      | DCall(fAddr, params) ->
+       let params_code =
+         List.fold_right
+           (fun e code -> code @@ tr_expr e @@ push t0)
+           params nop
+       in
+       params_code (* STEP 1 *)
+       @@ (tr_expr fAddr)
+       @@ jalr t0
        @@ addi sp sp (4 * List.length params)
 
   in
@@ -453,6 +470,16 @@ let tr_function fdef =
        this value will not be used. *)
     | Expr(e) ->
        tr_expr e
+   | Write (e1, e2) ->
+      tr_expr e1
+      @@ push t0
+      @@ tr_expr e2
+      @@ pop t1
+      @@ sw t0 0(t1)
+    | Seq(l) -> 
+      List.fold_left (fun acc ins ->
+         acc @@ (tr_instr ins)   
+      ) nop l
 
             
   in

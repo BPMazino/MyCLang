@@ -6,6 +6,7 @@
  (infer true))
 (executables
  (names impc impi)
+  (modes byte exe)
  (promote (until-clean))
  (flags ()))
 (env (dev (flags (:standard -w -50))))

@@ -1,4 +1,0 @@
-function main(arg) {
-  return 42;
-}
-

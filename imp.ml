@@ -24,7 +24,11 @@ type expression =
   (* Binary operation, with an operator and two operands *)
   | Binop of binop * expression * expression
   (* Function call, with a function name and a list of parameters *)
-  | Call  of string * expression list
+  | Call  of string * expression list 
+  | DCall of expression  * expression list 
+  | Deref of expression (* déréférencement d'une variable *)
+  | Alloc   of expression (* allocation d'une variable *)
+  | Addr of string (* adresse d'une variable *)
 
 (**
    Data structure for instructions
@@ -42,6 +46,8 @@ type instruction =
   | Return  of expression
   (* Expression used as an instruction (typically function call) *)
   | Expr    of expression
+  | Write  of expression * expression
+  | Seq of sequence (* This constructor is convenient when a single Objlng instruction translates to (a sequence of) more than one Imp instructions.*)
 (* Instruction sequence *)
 and sequence = instruction list
 
@@ -51,13 +57,17 @@ type branchement =
 
 
 (* Vérification que e est sans effet de bord *)
-let rec pure e =
+(* let rec pure e =
   match e with
   | Cst _ | Bool _ -> true
   | Var _ -> false
   | Binop (_, e1, e2) -> pure e1 && pure e2
   | Call (_, el) -> false
-
+  | DCall (e, el) -> false
+  | Deref e -> false
+  | Alloc e -> false
+  | Addr _ -> false
+ *)
 
 (*
    mkAdd(n1, n2) = n1 + n2
@@ -69,7 +79,7 @@ mkAdd(e, n) = (add n) e
 mkAdd(e1, e2) = add e1 e2 sinon
 *)
 
-let rec mkAdd e1 e2 = 
+(* let rec mkAdd e1 e2 = 
   match e1, e2 with
   | Cst 0, e | e, Cst 0 -> e
   | Cst n1, Cst n2 -> Cst (n1 + n2)
@@ -105,7 +115,7 @@ let rec mkBinop op e1 e2 =
   | Add -> mkAdd e1 e2
   | Mul -> mkMul e1 e2
   | Lt -> mkLt e1 e2
-
+ *)
 
 
 
@@ -135,6 +145,14 @@ type program = {
 
 
 
+let print_list print_elt sep fmt l =
+  let rec print_list_aux fmt l =
+    match l with
+    | [] -> ()
+    | [x] -> print_elt fmt x
+    | x :: l -> Format.fprintf fmt "%a%s%a" print_elt x sep print_list_aux l
+  in
+  Format.fprintf fmt "%a" print_list_aux l
 
 (** Print a binary operator *)
 let print_binop fmt op =
@@ -146,3 +164,118 @@ let print_binop fmt op =
 
 
 (** Print an expression *)
+let rec print_expression fmt e =
+  match e with
+  | Cst n -> Format.fprintf fmt "%d" n
+  | Bool b -> Format.fprintf fmt "%b" b
+  | Var x -> Format.fprintf fmt "%s" x
+  | Binop (op, e1, e2) ->
+     Format.fprintf fmt "(%a %a %a)"
+                    print_expression e1
+                    print_binop op
+                    print_expression e2
+  | Call (f, el) ->
+     Format.fprintf fmt "%s(%a)"
+                    f
+                    (print_list print_expression ", ") el
+  | DCall (e, el) -> 
+     Format.fprintf fmt "%a(%a)"
+                    print_expression e
+                    (print_list print_expression ", ") el
+  | Deref e ->
+      Format.fprintf fmt "*%a" print_expression e
+  | Alloc e ->
+      Format.fprintf fmt "alloc(%a)" print_expression e
+  | Addr x ->
+      Format.fprintf fmt "&%s" x
+
+(** Print an instruction *)
+let rec print_instruction fmt i =
+  match i with
+  | Putchar e ->
+     Format.fprintf fmt "putchar(%a)" print_expression e
+  | Set (x, e) ->
+     Format.fprintf fmt "%s = %a" x print_expression e
+  | If (e, s1, s2) ->
+     Format.fprintf fmt "if (%a) {@\n%a@\n} else {@\n%a@\n}"
+                    print_expression e
+                    print_sequence s1
+                    print_sequence s2
+  | While (e, s) ->
+     Format.fprintf fmt "while (%a) {@\n%a@\n}"
+                    print_expression e
+                    print_sequence s
+  | Return e ->
+     Format.fprintf fmt "return %a" print_expression e
+  | Expr e ->
+     Format.fprintf fmt "%a" print_expression e
+  | Write (e1, e2) ->
+     Format.fprintf fmt "%a = %a" print_expression e1 print_expression e2
+  | Seq s ->
+      Format.fprintf fmt "%a" print_sequence s
+and print_sequence fmt s =
+  Format.fprintf fmt "%a"
+                 (print_list print_instruction "@\n") s
+
+(** Print a function definition *)
+let print_function_def fmt f =
+  Format.fprintf fmt "function %s(%a) {@\n%a@\n}"
+                 f.name
+                 (print_list Format.pp_print_string ", ") f.params
+                 print_sequence f.code
+
+(** Print a program *)
+let print_program fmt p =
+  Format.fprintf fmt "var %a@\n@\n%a"
+                 (print_list Format.pp_print_string ", ") p.globals
+                 (print_list print_function_def "@\n@\n") p.functions
+
+
+
+
+let string_of_list print_elt sep l =
+  let rec string_of_list_aux l =
+    match l with
+    | [] -> ()
+    | [x] -> print_elt x
+    | x :: l -> print_elt x; Printf.printf "%s" sep;  string_of_list_aux l
+  in
+  string_of_list_aux l
+
+
+(** Print a binary operator *)
+let  string_of_binop op =
+  match op with
+  | Add -> Printf.printf "+"
+  | Mul -> Printf.printf "*"
+  | Lt  -> Printf.printf "<"
+
+let rec string_of_expr e =
+  match e with
+  | Cst n -> Printf.printf "%d" n
+  | Bool b -> Printf.printf "%b" b
+  | Var x -> Printf.printf "%s" x
+  | Binop (op, e1, e2) ->
+     Printf.printf "(";
+     string_of_expr e1;
+     string_of_binop op;
+     string_of_expr e2;
+     Printf.printf ")"
+  | Call (f, el) ->
+     Printf.printf "%s(" f;
+     string_of_list string_of_expr ", " el;
+     Printf.printf ")"
+  | DCall (e, el) -> 
+     string_of_expr e;
+     Printf.printf "(";
+     string_of_list string_of_expr ", " el;
+     Printf.printf ")"
+  | Deref e ->
+      Printf.printf "*";
+      string_of_expr e
+  | Alloc e ->
+      Printf.printf "alloc(";
+      string_of_expr e;
+      Printf.printf ")"
+  | Addr x ->
+      Printf.printf "&%s" x

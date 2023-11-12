@@ -12,9 +12,18 @@
         "while",    WHILE;
         "true",     BOOL true;
         "false",    BOOL false;
-        "var",      VAR;
+        "var",      VAR;        
         "function", FUNCTION;
+        "class",    CLASS;
+        "attribute", ATTRIBUTE;
+        "method",   METHOD;
+        "this",     THIS;
+        "extends",  EXTENDS;
+        "new",      NEW;
         "return",   RETURN;
+        "int",      TYP_INT;
+        "bool",     TYP_BOOL;
+        "void",     TYP_VOID;
       ] ;
     fun s ->
       try  Hashtbl.find h s
@@ -58,6 +67,12 @@ rule token = parse
       { BEGIN }
   | "}"
       { END }
+  | "["
+      { LBRACKET }
+  | "]"
+      { RBRACKET }
+  | "."
+      { DOT }
   | ","
       { COMMA }
   | _

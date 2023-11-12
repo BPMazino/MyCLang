@@ -1,0 +1,10 @@
+var n
+
+function main() {
+n = 10@
+i = 0@
+while ((i < n)) {
+putchar((48 + i))@
+i = (i + 1)
+}
+}

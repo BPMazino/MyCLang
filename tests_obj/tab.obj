@@ -1,0 +1,20 @@
+function void main() {
+  var [bool] tab;
+  var int i;
+  tab = new [bool, 10];
+  tab[0] = true;
+  tab[1] = false;
+  i = 2;
+  while (i < 8) {
+    tab[i] = true;
+    i = i+1;
+  }
+  if (tab[1]) {
+    putchar(56);
+  } else {
+    putchar(57);
+  }
+  
+}
+
+// prints 8

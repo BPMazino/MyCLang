@@ -1,10 +1,11 @@
 open Ertl;;
 
+
 (*Translation from RTL  (Register Transfer Language) to ERTL (Explicit Register Transfer Language)*)
 
 let (graph : Ertl.cfg ref) = ref (Hashtbl.create 16);;
 
-let env = ref (Hashtbl.create 16);;
+
 
 
 
@@ -13,26 +14,23 @@ let new_label () =
 
   fun () ->
     incr cpt_label;
-    Printf.printf "L%d\n" !cpt_label;  
+    (* Printf.printf "L%d\n" !cpt_label;  *) 
     !cpt_label
 
-
-let new_label () =
-  let i = ref (-1) in
-  fun () ->
-    incr i;
-    Printf.printf "L%d\n" !i;  
-    !i 
 
 let generate_reg = Mips.fresh  ;;
 let generate_label = new_label ();;
 
 
 
-let split m l =
-  let rec aux (acc, i) elt = if i >= m then (acc, i) else ((elt :: acc), (i + 1)) in
-  let res, _ = List.fold_left aux ([], 0) l in 
-  List.rev res 
+let rec split lst n = 
+  if n < 0 then failwith "split : n < 0"
+  else if n = 0 then ([], lst)
+  else match lst with
+    | [] -> ([], [])
+    | h :: t -> let (l1, l2) = split t (n - 1) in (h :: l1, l2)
+;;
+
 let add_in_graph (i : Ertl.instruction) = 
   let l = generate_label () in
   Hashtbl.add !graph l i;
@@ -51,113 +49,174 @@ let pseudo_to_real_list (pseudo_reg_list : Rtl.pseudo_register list) : register 
   List.map pseudo_to_real pseudo_reg_list *)
 
 
-let move_pseudo_to_hw (pseudo_reg : Rtl.register) (hw_reg : Mips.register) (l : int ) : int =
-  add_in_graph (Ertl.ERMove (hw_reg, pseudo_reg, l) )
 
-let move_pseudo_to_hw_list (pseudo_reg_list : Rtl.register list) (hw_reg_list : Mips.register list) (l : int ) : int =
-  let aux hw_reg pseudo_reg l = move_pseudo_to_hw pseudo_reg hw_reg l in
-  List.fold_right2 aux hw_reg_list pseudo_reg_list l
+(*Move hard registers to pseudo registers*)
+let args_to_regs hw_reg_list pseudo_reg_list  (l : int ) : int =
+  let rec aux hws pseudos = 
+      match hws, pseudos with
+      | [],_ | _, [] -> l
+      | h :: t, p :: q -> 
+        let l1 = aux t q in
+        add_in_graph (Ertl.EMove (h, p, l1))
+  in
+  aux hw_reg_list pseudo_reg_list
+;;
+let regs_to_args pseudo_reg_list hw_reg_list (l : int) : int =
+  let rec aux pseudos hws = 
+      match pseudos, hws with
+      | [],_ | _, [] -> l
+      | h :: t, p :: q -> 
+        let l1 = aux t q in
+        add_in_graph (Ertl.EMove (p, h, l1))
+  in
+  aux pseudo_reg_list hw_reg_list
+;;
 
+let push_args args l = 
+  let rec aux args = 
+    match args with
+    | [] -> l
+    | h :: t -> 
+      add_in_graph (Ertl.EPush_param (h, aux t))
+    in
+    aux args
+  ;;
 
-let move_hw_to_pseudo (hw_reg : Mips.register) (pseudo_reg : Rtl.register) (l : int ) : int =
-  add_in_graph (Ertl.ERMove (pseudo_reg, hw_reg, l) )
-
-let move_hw_to_pseudo_list (hw_reg_list : Mips.register list) (pseudo_reg_list : Rtl.register list) (l : int ) : int = 
-  let aux hw_reg pseudo_reg l = move_hw_to_pseudo hw_reg pseudo_reg l in
-  List.fold_right2 aux hw_reg_list pseudo_reg_list l
+let pop_args args l = 
+  let offset = ref (4 *2) in 
+  let rec aux args = 
+    match args with
+    | [] -> l
+    | h :: t -> 
+      let curr_offset = !offset in
+      offset := !offset + 4;
+      let l1 = aux t in
+      add_in_graph (Ertl.EStack_offset (h, curr_offset, l1))
+    in
+    aux args
+  ;;
 
 
 let rec tr_instruction (rtl_instr:Rtl.instruction) : Ertl.instruction = 
   match rtl_instr with
-  | RCst (n, r, l) -> ERCst(n, r, l)
-  | RBool (b, r, l) -> ERBool(b,  r, l)
-  | RMove (r1, r2, l) -> ERMove( r1,  r2, l)
-  | RBinop (b, r1, r2, l) -> ERBinop(b,  r1,  r2, l)
+  | RCst (n, r, l) -> ECst(n, r, l)
+  | RBool (b, r, l) -> EBool(b,  r, l)
+  | RMove (r1, r2, l) -> EMove( r1,  r2, l)
+  | RUnop (u, r, l) -> EUnop(u,  r, l)
+  | RBinop (b, r1, r2, l) -> EBinop(b,  r1,  r2, l)
   | RCall (r, s, rl, l) -> tr_call r s rl l
-  | RSet (r1, r2, l) -> ERSet( r1,  r2, l)
-  | RIf (r, l1, l2) -> ERIf( r, l1, l2)
-  | RPutchar (r, l) -> ERPutchar( r, l)
-  | RWhile (r, l1, l2) -> ERWhile( r, l1, l2)
-  | RGoto l -> ERGoto l
-  | Jle (r1, r2, l1, l2) -> EJle( r1,  r2, l1, l2)
-  | Jz (r, l1, l2) -> EJz( r, l1, l2)
+  | RPutchar (r, l) -> EPutchar( r, l)
+  | RJmp l -> EJmp l
+  | RJccb (b, r1, r2, l1, l2) -> EJccb(b, r1, r2, l1, l2)
+  | RJccu (b, r, l1, l2) -> EJccu(b, r, l1, l2)
+  | RReturn -> EReturn
+  | RAlloc (r,l) -> EAlloc_frame l
+  | _ -> failwith "tr_instruction : not implemented"
 
-and tr_call r id r_list l  : Ertl.instruction =
-  let n = List.length r_list in
-  let num_registers = List.length Mips.parameters in
-  let unstack_l =
-    if n <= num_registers then l else
-      let offset = 8 * (n - num_registers) in
-      (* Generate a constant representing the offset *)
-      let offset_l = add_in_graph (ERCst (offset, Mips.tmp1, l)) in
-      (* Adjust the stack pointer *)
-      add_in_graph (ERBinop (Imp.Add,  Mips.sp,  Mips.tmp1, offset_l)) in
-  let copyres_l = add_in_graph (ERMove ( Mips.result,  r, unstack_l)) in
-  let funcall_l = add_in_graph (ERCall (id, min 6 n, copyres_l)) in
-  let argpush_l =
-    let r_list' = split (n - 6) (List.rev r_list) in
-    List.fold_left (fun l r -> add_in_graph (EPush_param (r, l))) funcall_l ( r_list') in
-  argpass r_list argpush_l
+and tr_call ret_reg id args l   =
+  let nb_params = List.length Mips.parameters in
+  let  (args_for_regs , args_for_stack) = split args nb_params in
+  let nb_stacked_args = List.length args_for_stack in
+  let pop = 
+    if nb_stacked_args > 0 then 
+      add_in_graph (Ertl.EUnop(OAddi (nb_stacked_args * 4), Mips.sp, l))
+    else l
+  in 
 
-and argpass r_list l =
-  let num_registers = List.length Mips.parameters in
-  let m = min num_registers (List.length r_list) in
-  let aux reg par l' = add_in_graph (ERMove(reg, par, l')) in
-  ERGoto (List.fold_right2 aux (split m ( r_list)) (split m Mips.parameters) l)
-
-
-
-let translate_cfg (rtl_cfg:Rtl.cfg) =
-  Hashtbl.iter (fun k i -> Hashtbl.add !graph k (tr_instruction i)) rtl_cfg
+  let res = add_in_graph (Ertl.EMove( Mips.result,ret_reg, pop)) in
+  let call = add_in_graph (Ertl.ECall(id,nb_stacked_args, res)) in
+  let start_push = push_args args_for_stack call in
+  let start_move = args_to_regs Mips.parameters args_for_regs start_push in
+  Ertl.ENop start_move
 ;;
 
 
 
-let tr_entry (fdef:Rtl.function_def) locals =
-  
-  let params = fdef.params in 
-  let n = List.length params in 
-  let entry = fdef.entry in
-  (* Handling arguments passed on the stack *)
-  let argpop_label =
-    let r_list' = split (n - 4) (List.rev params) in
-    let aux (l', ofs) r = (add_in_graph (EGet_param (ofs, r, l')), ofs + 8) in
-    let l, _ = List.fold_left aux (entry, 16) ( r_list') in
-    l in
+(* let print_cfg fmt cfg =
 
-  (* Handling arguments passed in registers *)
-  let argrec_label =
-    let m = min 4 n in
-    let aux reg par l' = add_in_graph (ERMove (par, reg, l')) in
-    List.fold_right2 aux (split m ( params)) (split m Mips.parameters) argpop_label in
 
-  (* Saving callee-saved registers *)
-  let callee_regs, calleesav_label =
-    let aux (r_list', l') r =
-      let r' = generate_reg () in
-      Hashtbl.add !env r r';
-      (r' :: r_list', add_in_graph (ERMove (r,   r', l'))) in
-    List.fold_left aux ([], argrec_label) Mips.callee_saved in
+let print_label fmt l =
+  Format.fprintf fmt "L%d" l
+in
 
-  add_in_graph (EAlloc_frame calleesav_label), List.rev callee_regs
+let print_instruction fmt (l, i) =
+  Format.fprintf fmt "%a: %a\n" print_label l print_instruction i
+in
+Format.fprintf fmt "{\n@[<v 0>%a@]}"
+  (Utils.print_list print_instruction) (Hashtbl.to_seq cfg |> List.of_seq) *)
 
-let tr_exit (fdef:Rtl.function_def) r_list  =
-  let ret_l = add_in_graph (Ertl.EReturn) in
-  let del_l = add_in_graph (Ertl.EDelete_frame ret_l) in
-  let aux l r c  = add_in_graph (Ertl.ERMove (r, c, l)) in
-  let call_e = List.fold_left2 aux del_l r_list Mips.callee_saved in
-  Ertl.ERMove (fdef.result, Mips.result, call_e)
+
+
+
+
+let translate_cfg (rtl_cfg:Rtl.cfg) =
+  Hashtbl.iter (fun l i ->(*  print_int l; print_string " : "; *) Hashtbl.add !graph l (tr_instruction i))  rtl_cfg;
+;;
+
+
+let save_callee regs l = 
+    let rec aux regs =
+      match regs with
+      | [] ->([], l)
+      | h :: t -> 
+        let r = generate_reg () in 
+        let rem_env, next = aux t in
+        let l1 = add_in_graph (Ertl.EMove (h, r, next)) in
+        
+        ((h, r) :: rem_env), l1
+        
+    in
+    aux regs
+  ;;
+    
+  let restore_callee save l = 
+    let rec aux save = 
+      match save with
+      | [] -> l
+      | (phys, save_in) :: t -> 
+        let l1 = aux t in 
+        add_in_graph (Ertl.EMove (save_in, phys, l1))
+    in 
+    aux save
+  ;;
+
+  (* Retrieve parameters from registers or stack *)
+  let retrieve_params params l = 
+    let (args_from_regs, args_from_stack) = split params (List.length Mips.parameters) in
+    let tmp = pop_args  args_from_regs l in
+    regs_to_args args_from_regs Mips.parameters tmp 
+  ;;
 
 let tr_function (fdef:Rtl.function_def) : Ertl.function_def =
-  let name = fdef.name in
-  let params = List.length fdef.params in
-  let locals = fdef.locals in
-  let entry, callee_regs = tr_entry fdef locals in
-  translate_cfg fdef.body;
-  let exit = tr_exit fdef callee_regs in
-  Hashtbl.add !graph fdef.exit exit ;
-  let code  = !graph in
-  { name = name; nb_params = params; locals = locals; entry = entry; body = code}
+
+  translate_cfg fdef.code;
+
+  let params = fdef.params in 
+  let entry = fdef.entry in
+
+  let get_params = retrieve_params params entry in
+  let save, reg_save = 
+  if fdef.name = "main" then 
+    [], (add_in_graph (Ertl.ENop get_params))
+  else 
+    save_callee Mips.callee_saved get_params in
+
+  let alloc = add_in_graph (Ertl.EAlloc_frame (reg_save)) in
+  let l_ret = add_in_graph (Ertl.EReturn) in
+  let dealloc = add_in_graph (Ertl.EDelete_frame l_ret) in
+  let restore = restore_callee save dealloc in
+  let exit = Ertl.EMove (fdef.result, Mips.result, restore) in 
+  Hashtbl.add !graph fdef.exit exit;
+  
+  {
+    name = fdef.name;
+    entry = alloc;
+    nb_params = List.length fdef.params;
+    locals = fdef.locals;
+    code = !graph;
+  }
+;;
+
 
 
 let tr_program (rtl_prog:Rtl.program) : Ertl.program =

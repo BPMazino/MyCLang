@@ -1,0 +1,14 @@
+globals: 
+
+main()
+  entry : L1
+  locals: 
+  {L2: return
+L2: loadi #109 #1  --> L1
+L3: delete_frame --> L2
+L0: mov #0 $v0  --> L3
+L0: nop --> L2
+L0: return
+L1: alloc_frame --> L0
+L1: putchar #1  --> L0
+}

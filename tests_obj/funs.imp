@@ -1,0 +1,13 @@
+var 
+
+function double(x) {
+return (2 * x)
+}@
+@
+function sum(x, y) {
+return (x + y)
+}@
+@
+function main() {
+putchar((48 + sum(1, double(2))))
+}

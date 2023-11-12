@@ -1,0 +1,11 @@
+globals: 
+
+#0 main()
+  entry : L2
+  exit  : L0
+  locals: 
+  {
+L2: loadi #109 #1  --> L1
+L0: return
+L1: putchar #1  --> L0
+}

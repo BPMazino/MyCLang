@@ -1,0 +1,21 @@
+globals: 
+
+#0 main()
+  entry : L12
+  exit  : L0
+  locals: 
+  {
+L6: loadi #98 #3  --> L5
+L2: loadi #100 #1  --> L1
+L8: loadi #0 #4  --> L7
+L7: jcc lt #4  --> L6
+L3: putchar #2  --> L2
+L12: loadi #1 #6  --> L11
+L5: putchar #3  --> L2
+L4: loadi #97 #2  --> L3
+L9: putchar #5  --> L2
+L11: jcc lt #6  --> L10
+L0: return
+L10: loadi #99 #5  --> L9
+L1: putchar #1  --> L0
+}

@@ -60,9 +60,9 @@ let caller_saved =
 let callee_saved =
   [ s0; s1; s2; s3; s4; s5; s6; s7 ]
 
-let allocatable = set_of_list (caller_saved @ callee_saved)
+let allocatable = caller_saved @ callee_saved
 
-let k = S.cardinal allocatable
+let k =  List.length allocatable
 
 let tmp1, tmp2 =
   t8, t9

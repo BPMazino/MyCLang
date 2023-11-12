@@ -1,40 +1,74 @@
 type token =
     WHILE
   | VAR
+  | TYP_VOID
+  | TYP_INT
+  | TYP_BOOL
+  | THIS
   | STAR
   | SET
   | SEMI
   | RPAR
   | RETURN
+  | RBRACKET
   | PUTCHAR
   | PLUS
+  | NEW
+  | METHOD
   | LT
   | LPAR
+  | LBRACKET
   | IF
   | IDENT of string
   | FUNCTION
+  | EXTENDS
   | EOF
   | END
   | ELSE
+  | DOT
   | CST of int
   | COMMA
+  | CLASS
   | BOOL of bool
   | BEGIN
+  | ATTRIBUTE
+val classes : Objlng.loc Objlng.class_def list ref
+val globals : (string * Objlng.typ) list ref
+val functions : Objlng.loc Objlng.function_def list ref
+val mk_loc : Lexing.position * Lexing.position -> Objlng.loc
+val mk_expr :
+  Lexing.position * Lexing.position ->
+  Objlng.loc Objlng.expr -> Objlng.loc Objlng.expression
 val menhir_begin_marker : int
-val xv_variable_decl : string
-val xv_separated_nonempty_list_COMMA_expression_ : Imp.expression list
-val xv_separated_nonempty_list_COMMA_IDENT_ : string list
-val xv_separated_list_COMMA_expression_ : Imp.expression list
-val xv_separated_list_COMMA_IDENT_ : string list
-val xv_program : Imp.program
+val xv_variable_decl : string * Objlng.typ
+val xv_typed_ident : string * Objlng.typ
+val xv_typ : Objlng.typ
+val xv_separated_nonempty_list_COMMA_typed_ident_ :
+  (string * Objlng.typ) list
+val xv_separated_nonempty_list_COMMA_expression_ :
+  Objlng.loc Objlng.expression list
+val xv_separated_list_COMMA_typed_ident_ : (string * Objlng.typ) list
+val xv_separated_list_COMMA_expression_ : Objlng.loc Objlng.expression list
+val xv_program : Objlng.loc Objlng.program
+val xv_option___anonymous_0_ : string option
+val xv_method_def : Objlng.loc Objlng.function_def
+val xv_mem_access : Objlng.loc Objlng.mem
+val xv_loption_separated_nonempty_list_COMMA_typed_ident__ :
+  (string * Objlng.typ) list
 val xv_loption_separated_nonempty_list_COMMA_expression__ :
-  Imp.expression list
-val xv_loption_separated_nonempty_list_COMMA_IDENT__ : string list
-val xv_list_variable_decl_ : string list
-val xv_list_instruction_ : Imp.sequence
-val xv_list_function_def_ : Imp.function_def list
-val xv_instruction : Imp.instruction
-val xv_function_def : Imp.function_def
-val xv_expression : Imp.expression
-val xv_binop : Imp.binop
+  Objlng.loc Objlng.expression list
+val xv_list_variable_decl_ : (string * Objlng.typ) list
+val xv_list_method_def_ : Objlng.loc Objlng.function_def list
+val xv_list_instruction_ : Objlng.loc Objlng.sequence
+val xv_list_decl_ : unit list
+val xv_list_attribute_decl_ : (string * Objlng.typ) list
+val xv_instruction : Objlng.loc Objlng.instruction
+val xv_function_def : Objlng.loc Objlng.function_def
+val xv_fun_def : Objlng.loc Objlng.function_def
+val xv_expression : Objlng.loc Objlng.expression
+val xv_decl : unit
+val xv_class_def : Objlng.loc Objlng.class_def
+val xv_binop : Objlng.binop
+val xv_attribute_decl : string * Objlng.typ
+val xv___anonymous_0 : string
 val menhir_end_marker : int

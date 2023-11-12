@@ -1,0 +1,10 @@
+globals()
+function main() {
+tab = alloc(40);write(tab, true);write(addi 4 tab, false);i = 2;while (8 slt i) {
+write(tab add addi 4 i, true);i = addi 1 i;
+}if (*addi 4 tab) {
+putchar(56);
+} else {
+putchar(57);
+}
+}

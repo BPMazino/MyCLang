@@ -1,0 +1,12 @@
+globals()
+function main() {
+if (true) {
+if (false) {
+putchar(97);
+} else {
+putchar(98);
+}
+} else {
+putchar(99);
+}putchar(100);
+}

@@ -1,0 +1,21 @@
+
+function main() {
+  var tab;
+  var i;
+  
+  tab = alloc((10 * 4));
+  *(tab + (0 * 4)) = true;
+  *(tab + (1 * 4)) = false;
+  i = 2;
+  while ((i < 8)) {
+    *(tab + (i * 4)) = true;
+    i = (i + 1);
+  }
+  if (*(tab + (1 * 4))) {
+    putchar(56);
+  } else {
+    putchar(57);
+  }
+}
+
+

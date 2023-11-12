@@ -1,9 +1,0 @@
-globals: 
-
-#1 main(#2)
-  entry : L1
-  exit  : L0
-  locals: 
-  {
-L1: mov $42 #0  --> L0
-}

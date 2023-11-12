@@ -12,28 +12,32 @@ type register = Mips.register
 (* Le graphe de flot de contrôle peut être représenté par un dictionnaire associant une
 instruction RTL à chaque étiquette. *)
 
+type condition = Lt | Le | Eq | Ne | Ge | Gt
 
 type instruction =
 (* Integer constant: 0, -1, 42, ... *)
   | RCst   of int * register * label
   (* Boolean constant: true, false *)
   | RBool  of bool * register * label
-  (* Variable, identified by a name *)
+  (* Assignement d'une valeur*)
   | RMove of register * register * label
+  | RUnop of Llast.unop * register * label
   (* Binary operation, with an operator and two operands *)
-  | RBinop of Imp.binop * register * register * label 
+  | RBinop of Llast.binop * register * register * label 
   (* Function call, with a function name and a list of parameters *)
   | RCall  of register * string * register list * label
-  (* Assignment of a new value to a variable *)
-  | RSet     of  register * register * label
   (* Conditional *)
-  | RIf      of  register * label * label
+  | RCmp   of  register * register * label
+  (*Putchar*)
   | RPutchar of register * label
-  (* Loop *)
-  | RWhile   of register * label * label
-  | RGoto of label 
-  | Jle  of register * register * label * label
-  | Jz of register * label * label
+  | RJmp of label (*saut inconditionnel Jmp*)
+  | RJccb of condition * register  * register* label * label (*saut conditionnel Jcc*)
+  | RJccu of condition * register * label * label (*saut conditionnel Jcc*)
+  | RSetccu of condition * register * label (*setcc*)
+  | RSetccb of condition * register * label (*setcc*)
+  (* | RSetcc of Llast.condition * register * label (*setcc*) *)
+  | RReturn 
+  | RAlloc of register * label
   
   
 
@@ -47,7 +51,7 @@ type function_def = {
   locals: register list;
   entry : label;
   exit : label;
-  body : cfg;
+  code : cfg;
 }
 
 type program = {
@@ -67,20 +71,34 @@ let print_register_list fmt l =
 let print_label fmt l =
   Format.fprintf fmt "L%d" l
 
+let print_condition fmt c =
+  match c with
+  | Lt -> Format.fprintf fmt "lt"
+  | Le -> Format.fprintf fmt "le"
+  | Eq -> Format.fprintf fmt "eq"
+  | Ne -> Format.fprintf fmt "ne"
+  | Ge -> Format.fprintf fmt "ge"
+  | Gt -> Format.fprintf fmt "gt"
+
 let print_instruction fmt i =
   match i with 
-  | RCst (n,r,l) -> Format.fprintf fmt "mov $%d %a  --> %a" n print_register r  print_label l
-  | RBool (b,r,l) -> Format.fprintf fmt "mov $%b %a  --> %a" b print_register r  print_label l
+  | RCst (n,r,l) -> Format.fprintf fmt "loadi #%d %a  --> %a" n print_register r  print_label l
+  | RBool (b,r,l) -> Format.fprintf fmt "mov #%b %a  --> %a" b print_register r  print_label l
   | RMove (r1, r2, l) -> Format.fprintf fmt "mov %a %a  --> %a" print_register r1 print_register r2  print_label l 
-  | RBinop (b, r1, r2, l) -> Format.fprintf fmt "binop %a %a %a  --> %a" Imp.print_binop b print_register r1 print_register r2  print_label l
+  | RBinop (b, r1, r2, l) -> Format.fprintf fmt "%a %a %a  --> %a" Llast.print_binop b print_register r1 print_register r2  print_label l
   | RCall (r, f, args, l) -> Format.fprintf fmt "%a <- call %s(@[%a@])  --> %a" print_register r f (Utils.print_list print_register) args  print_label l
-  | RSet (r1, r2, l) -> Format.fprintf fmt "mov %a %a  --> %a" print_register r1 print_register r2  print_label l
-  | RIf (r, l1, l2) -> Format.fprintf fmt "RIf(%a, %a, %a)" print_register r print_label l1 print_label l2
-  | RPutchar (r, l) -> Format.fprintf fmt "RPutchar(%a, %a)" print_register r print_label l
-  | RWhile (r, l1, l2) -> Format.fprintf fmt "RWhile(%a, %a, %a)" print_register r print_label l1 print_label l2
-  | RGoto l -> Format.fprintf fmt "goto %d" l
-  | Jle (r1, r2, l1, l2) -> Format.fprintf fmt "jle %a %a %a %a" print_register r1 print_register r2 print_label l1 print_label l2
-  | Jz (r, l1, l2) -> Format.fprintf fmt "jz %a %a %a" print_register r print_label l1 print_label l2
+  (* | RSetcc (c, r, l) -> Format.fprintf fmt "set %a %a  --> %a" Llast.print_condition c print_register r  print_label l *)
+  | RCmp (r1, r2, l) -> Format.fprintf fmt "cmp %a %a  --> %a" print_register r1 print_register r2  print_label l
+  | RPutchar (r, l) -> Format.fprintf fmt "putchar %a  --> %a" print_register r  print_label l
+  | RJmp l -> Format.fprintf fmt "jmp %a" print_label l
+  | RJccb (b, r1, r2, l1, l2) -> Format.fprintf fmt "jcc %a %a %a  --> %a" print_condition b print_register r1 print_register r2  print_label l1
+  | RJccu (b, r, l1, l2) -> Format.fprintf fmt "jcc %a %a  --> %a" print_condition b print_register r  print_label l1
+  | RReturn -> Format.fprintf fmt "return"
+  | RUnop (u, r, l) -> Format.fprintf fmt "%a %a  --> %a" Llast.print_unop u print_register r  print_label l
+  | RSetccu (c, r, l) -> Format.fprintf fmt "set %a %a  --> %a" print_condition c print_register r  print_label l
+  | RSetccb (c, r, l) -> Format.fprintf fmt "set %a %a  --> %a" print_condition c print_register r  print_label l
+  | RAlloc (r, l) -> Format.fprintf fmt "alloc %a  --> %a" print_register r  print_label l
+
 
 
 let print_cfg fmt cfg =
@@ -98,7 +116,7 @@ let print_function_def fmt f =
   Format.fprintf  fmt "entry : %a@\n"  print_label f.entry;
   Format.fprintf  fmt "exit  : %a@\n" print_label f.exit;
   Format.fprintf  fmt "locals: @[%a@]@\n" (Utils.print_list print_register) f.locals;
-  print_cfg fmt f.body ;
+  print_cfg fmt f.code ;
   Format.fprintf  fmt "@]@."
 let print_program fmt p =
   Format.fprintf fmt "globals: @[%a@]@\n@\n%a"

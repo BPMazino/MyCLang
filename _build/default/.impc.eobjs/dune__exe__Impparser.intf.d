@@ -1,1 +1,1 @@
-impparser.mli: Imp Lexing
+impparser.mli: Lexing Objlng
