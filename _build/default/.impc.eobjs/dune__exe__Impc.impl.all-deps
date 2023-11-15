@@ -5,6 +5,8 @@ dune__exe__Imp2mips
 dune__exe__Implexer
 dune__exe__Impparser
 dune__exe__Imppp
+dune__exe__Interference
+dune__exe__Kildall
 dune__exe__Llast
 dune__exe__Llast2rtl
 dune__exe__Mips

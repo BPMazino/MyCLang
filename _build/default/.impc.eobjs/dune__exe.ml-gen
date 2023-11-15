@@ -30,6 +30,12 @@ module Impparser = Dune__exe__Impparser
 (** @canonical Dune__exe.Imppp *)
 module Imppp = Dune__exe__Imppp
 
+(** @canonical Dune__exe.Interference *)
+module Interference = Dune__exe__Interference
+
+(** @canonical Dune__exe.Kildall *)
+module Kildall = Dune__exe__Kildall
+
 (** @canonical Dune__exe.Llast *)
 module Llast = Dune__exe__Llast
 

@@ -1,0 +1,42 @@
+globals: 
+
+main()
+  entry : L1
+  locals: #0#1
+  {L2: return
+L2: loadi #56 #3  --> L1
+L20: loadi #2 #1  --> L19
+L29: alloc_frame --> L28
+L8: addi 1 #7  --> L7
+L7: mov #6 #1  --> L6
+L13: addi 4 #11  --> L12
+L12: add #10 #8  --> L11
+L9: mov #1 #1  --> L8
+L0: mov #2 $v0  --> L3
+L0: nop --> L30
+L0: return
+L11: loadi #1 #9  --> L10
+L10: mov #8 #9  --> L9
+L26: loadi #1 #19  --> L25
+L27: mov #0 #18  --> L26
+L15: mov #0 #8  --> L14
+L6: jmp L18
+L14: mov #1 #10  --> L13
+L21: mov #15 #16  --> L20
+L16: jcc ne #12 #13  --> L15
+L24: mov #0 #15  --> L23
+L3: delete_frame --> L2
+L3: putchar #4  --> L0
+L30: loadi #40 #21  --> L29
+L4: loadi #57 #4  --> L3
+L5: jcc lt #5  --> L4
+L23: addi 4 #17  --> L22
+L25: mov #18 #19  --> L24
+L1: alloc_frame --> L0
+L1: putchar #3  --> L0
+L28: mov #20 #0  --> L27
+L17: mov #1 #13  --> L16
+L18: loadi #8 #12  --> L17
+L19: mov #14 #1  --> L18
+L22: loadi #0 #16  --> L21
+}

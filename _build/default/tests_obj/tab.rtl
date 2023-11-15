@@ -1,0 +1,39 @@
+globals: 
+
+#2 main()
+  entry : L30
+  exit  : L0
+  locals: #0#1
+  {
+L20: loadi #2 #1  --> L19
+L6: jmp L18
+L2: loadi #56 #3  --> L1
+L29: alloc #21  --> L28
+L21: mov #15 #16  --> L20
+L14: mov #1 #10  --> L13
+L24: mov #0 #15  --> L23
+L16: jcc ne #12 #13  --> L15
+L8: addi 1 #7  --> L7
+L30: loadi #40 #21  --> L29
+L7: mov #6 #1  --> L6
+L3: putchar #4  --> L0
+L13: addi 4 #11  --> L12
+L12: add #10 #8  --> L11
+L5: jcc lt #5  --> L4
+L4: loadi #57 #4  --> L3
+L9: mov #1 #1  --> L8
+L25: mov #18 #19  --> L24
+L23: addi 4 #17  --> L22
+L11: loadi #1 #9  --> L10
+L0: return
+L28: mov #20 #0  --> L27
+L26: loadi #1 #19  --> L25
+L10: mov #8 #9  --> L9
+L1: putchar #3  --> L0
+L17: mov #1 #13  --> L16
+L27: mov #0 #18  --> L26
+L19: mov #14 #1  --> L18
+L18: loadi #8 #12  --> L17
+L22: loadi #0 #16  --> L21
+L15: mov #0 #8  --> L14
+}

@@ -1,6 +1,6 @@
 open Format;;
-
 open Typechecker;;
+open Interference;;
 
 
 let obj2imp prog : Imp.program =
